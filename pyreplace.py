@@ -44,6 +44,7 @@ parser.add_argument('-c', '--contents', metavar=("FIND", "REPLACE"),
 parser.add_argument('-ci', '--contents-insensitive', action='store_true',
                     help='Ignore capital/lowercase when searching contents.')
 args = parser.parse_args()
+
 def get_file_list():
     result = []
     for root, dirs, files in os.walk(args.directory):
@@ -87,8 +88,6 @@ def process_contents():
                                new_contents.splitlines(1)))
 
 def main():
-    args = parser.parse_args()
-
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
