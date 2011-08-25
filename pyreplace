@@ -1,0 +1,57 @@
+#!/usr/bin/python3
+import argparse
+import os
+import sys
+import glob
+from os.path import join
+
+DESCRIPTION = "Recursively find and replace in file names and contents."
+EXAMPLE = """Usage Examples:
+Replace foo with bar in filenames matching *.txt:
+pyreplace -g *.txt -f foo bar
+
+Find and replace foo with bar in files matching *.txt (Contents):
+pyreplace -g *.txt -c foo bar
+
+As above with all files in current directory:
+pyreplace -c foo bar
+
+As above with all files in another directory:
+pyreplace -d /home/foo -c foo bar
+"""
+
+parser = argparse.ArgumentParser(description=DESCRIPTION, epilog=EXAMPLE,
+                     formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument('-d', '--directory', action='store', default='.',
+                    help='Set starting directory.')
+parser.add_argument('-r', '--dry-run', action='store_true',
+                    help='Dont make any changes, just list what would happen.')
+parser.add_argument('-v', '--verbose', action='store_true',
+                    help='Display changes made.')           
+parser.add_argument('-g', '--glob', metavar='EXPRESSION', 
+                    action='store', default="*",
+                    help='Find files with matching extension. Example: *.txt')
+parser.add_argument('-f', '--filename', metavar=("FIND", "REPLACE"), 
+                    action='store', nargs=2,
+                    help='Search filename for FIND and replace with REPLACE.')
+parser.add_argument('-fi', '--filename-insensitive', action='store_true',
+                    help='Ignore capital/lowercase when searching filename.')
+parser.add_argument('-c', '--contents', metavar=("FIND", "REPLACE"), 
+                    action='store', nargs=2,
+                    help='Search contents for FIND and replace with REPLACE.')
+parser.add_argument('-ci', '--contents-insensitive', action='store_true',
+                    help='Ignore capital/lowercase when searching contents.')
+args = parser.parse_args()
+
+if len(sys.argv) == 1:
+    parser.print_help()
+    sys.exit(1)
+
+def get_file_list():
+    result = []
+    for root, dirs, files in os.walk(args.directory):
+        for item in glob.glob(join(root, args.glob)):
+            result.append(item)
+    return result
+    
+print(len(get_file_list()))
