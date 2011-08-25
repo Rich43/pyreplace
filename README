@@ -1,5 +1,5 @@
 usage: pyreplace [-h] [-d DIRECTORY] [-r] [-v] [-g EXPRESSION]
-                 [-f FIND REPLACE] [-fi] [-c FIND REPLACE] [-ci]
+                 [-f FIND REPLACE] [-fi] [-fd] [-c FIND REPLACE] [-ci]
 
 Recursively find and replace in file names and contents.
 
@@ -15,6 +15,9 @@ optional arguments:
                         Search filename for FIND and replace with REPLACE.
   -fi, --filename-insensitive
                         Ignore capital/lowercase when searching filename.
+  -fd, --filename-directory
+                        Rename directorys aswell as filenames (defaults to
+                        just filenames).
   -c FIND REPLACE, --contents FIND REPLACE
                         Search contents for FIND and replace with REPLACE.
   -ci, --contents-insensitive

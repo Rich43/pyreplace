@@ -85,7 +85,7 @@ def process_contents():
         if isdir(f):
             continue
         try:
-            contents = open(f, "r").read()
+            contents = str(open(f, "r").read())
         except IOError as e:
             print(e)
             continue
@@ -95,7 +95,7 @@ def process_contents():
                               contents, **opt_args)
         if not args.dry_run:
             try:
-                contents = open(f, "w").write(new_contents)
+                open(f, "w").write(new_contents)
             except IOError as e:
                 print(e)
                 continue
