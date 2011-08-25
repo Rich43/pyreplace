@@ -3,6 +3,7 @@ import argparse
 import os
 import sys
 import glob
+import re
 from os.path import join
 
 DESCRIPTION = "Recursively find and replace in file names and contents."
@@ -53,5 +54,18 @@ def get_file_list():
         for item in glob.glob(join(root, args.glob)):
             result.append(item)
     return result
-    
-print(len(get_file_list()))
+
+def process_filenames():
+    for f in get_file_list():
+        result = re.sub(args.filename[0], args.filename[1], f)
+        if not args.dry_run:
+            os.rename(f, result)
+        yield (f, result)
+        
+if args.filename:
+    if args.verbose or args.dry_run:
+        print("Processing Filenames...")
+    for result in process_filenames():
+        if args.verbose or args.dry_run:
+            print("Renaming %s to %s" % result)
+
