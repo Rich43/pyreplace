@@ -43,7 +43,7 @@ parser.add_argument('-c', '--contents', metavar=("FIND", "REPLACE"),
                     help='Search contents for FIND and replace with REPLACE.')
 parser.add_argument('-ci', '--contents-insensitive', action='store_true',
                     help='Ignore capital/lowercase when searching contents.')
-
+args = parser.parse_args()
 def get_file_list():
     result = []
     for root, dirs, files in os.walk(args.directory):
