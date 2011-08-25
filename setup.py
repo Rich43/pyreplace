@@ -6,7 +6,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='pyreplace',
-      version='1.1',
+      version='1.2',
       description='Recursively find and replace in file names and contents.',
       author='Richie Ward',
       author_email='RichieS@GMail.com',

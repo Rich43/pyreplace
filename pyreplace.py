@@ -6,7 +6,7 @@ import glob
 import re
 import shutil
 from difflib import unified_diff
-from os.path import join, isdir
+from os.path import join, isdir, split
 
 DESCRIPTION = "Recursively find and replace in file names and contents."
 EXAMPLE = """Usage Examples:
@@ -58,15 +58,24 @@ def get_file_list():
 
 def process_filenames():
     opt_args = {}
+    split_f = None
     if args.filename_insensitive:
         opt_args["flags"] = re.IGNORECASE
     for f in get_file_list():
         if not args.filename_directory and isdir(f):
             continue
-        result = re.sub(args.filename[0], args.filename[1], f, **opt_args)
+        if not args.filename_directory:
+            split_f = split(f)
+            result = re.sub(args.filename[0], args.filename[1], 
+                            split_f[1], **opt_args)
+            result = join(split_f[0], result)
+        else:
+            result = re.sub(args.filename[0], args.filename[1], 
+                            f, **opt_args)
         if not args.dry_run:
             shutil.move(f, result)
-        yield (f, result)
+        if f != result:
+            yield (f, result)
 
 def process_contents():
     opt_args = {}
