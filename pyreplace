@@ -4,7 +4,8 @@ import os
 import sys
 import glob
 import re
-from os.path import join
+from difflib import unified_diff
+from os.path import join, isdir
 
 DESCRIPTION = "Recursively find and replace in file names and contents."
 EXAMPLE = """Usage Examples:
@@ -52,7 +53,8 @@ def get_file_list():
     result = []
     for root, dirs, files in os.walk(args.directory):
         for item in glob.glob(join(root, args.glob)):
-            result.append(item)
+            if not isdir(item):
+                result.append(item)
     return result
 
 def process_filenames():
@@ -64,7 +66,34 @@ def process_filenames():
         if not args.dry_run:
             os.rename(f, result)
         yield (f, result)
-        
+
+def process_contents():
+    opt_args = {}
+    if args.contents_insensitive:
+        opt_args["flags"] = re.IGNORECASE
+    for f in get_file_list():
+        try:
+            contents = open(f, "r").read()
+        except IOError as e:
+            print(e)
+            continue
+        except UnicodeDecodeError:
+            continue
+        new_contents = re.sub(args.contents[0], args.contents[1], 
+                              contents, **opt_args)
+        if not args.dry_run:
+            try:
+                contents = open(f, "w").write(new_contents)
+            except IOError as e:
+                print(e)
+                continue
+        diff = ""
+        yield (f, unified_diff(contents.splitlines(1), 
+                               new_contents.splitlines(1)))
+
+if args.dry_run:
+    print("*" * 5 + " Dummy run, no changes will be made. " + "*" * 5)
+
 if args.filename:
     if args.verbose or args.dry_run:
         print("Processing Filenames...")
@@ -72,3 +101,14 @@ if args.filename:
         if args.verbose or args.dry_run:
             print("Renaming %s to %s" % result)
 
+if args.contents:
+    if args.verbose or args.dry_run:
+        print("Processing Contents...")
+    for result in process_contents():
+        if args.verbose or args.dry_run:
+            count = 0
+            for line in result[1]:
+                if count == 0:
+                    print("Made following changes to %s:" % result[0])
+                print(line, end="")
+                count += 1
