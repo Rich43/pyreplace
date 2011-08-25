@@ -56,8 +56,11 @@ def get_file_list():
     return result
 
 def process_filenames():
+    opt_args = {}
+    if args.filename_insensitive:
+        opt_args["flags"] = re.IGNORECASE
     for f in get_file_list():
-        result = re.sub(args.filename[0], args.filename[1], f)
+        result = re.sub(args.filename[0], args.filename[1], f, **opt_args)
         if not args.dry_run:
             os.rename(f, result)
         yield (f, result)
