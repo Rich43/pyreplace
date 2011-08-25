@@ -4,6 +4,7 @@ import os
 import sys
 import glob
 import re
+import shutil
 from difflib import unified_diff
 from os.path import join, isdir
 
@@ -38,6 +39,9 @@ parser.add_argument('-f', '--filename', metavar=("FIND", "REPLACE"),
                     help='Search filename for FIND and replace with REPLACE.')
 parser.add_argument('-fi', '--filename-insensitive', action='store_true',
                     help='Ignore capital/lowercase when searching filename.')
+parser.add_argument('-fd', '--filename-directory', action='store_true',
+                    help='Rename directorys aswell as' + \
+                         ' filenames (defaults to just filenames).')
 parser.add_argument('-c', '--contents', metavar=("FIND", "REPLACE"), 
                     action='store', nargs=2,
                     help='Search contents for FIND and replace with REPLACE.')
@@ -49,8 +53,7 @@ def get_file_list():
     result = []
     for root, dirs, files in os.walk(args.directory):
         for item in glob.glob(join(root, args.glob)):
-            if not isdir(item):
-                result.append(item)
+            result.append(item)
     return result
 
 def process_filenames():
@@ -58,9 +61,11 @@ def process_filenames():
     if args.filename_insensitive:
         opt_args["flags"] = re.IGNORECASE
     for f in get_file_list():
+        if not args.filename_directory and isdir(f):
+            continue
         result = re.sub(args.filename[0], args.filename[1], f, **opt_args)
         if not args.dry_run:
-            os.rename(f, result)
+            shutil.move(f, result)
         yield (f, result)
 
 def process_contents():
@@ -68,6 +73,8 @@ def process_contents():
     if args.contents_insensitive:
         opt_args["flags"] = re.IGNORECASE
     for f in get_file_list():
+        if isdir(f):
+            continue
         try:
             contents = open(f, "r").read()
         except IOError as e:
