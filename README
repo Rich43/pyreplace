@@ -1,0 +1,34 @@
+usage: pyreplace [-h] [-d DIRECTORY] [-r] [-v] [-g EXPRESSION]
+                 [-f FIND REPLACE] [-fi] [-c FIND REPLACE] [-ci]
+
+Recursively find and replace in file names and contents.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DIRECTORY, --directory DIRECTORY
+                        Set starting directory.
+  -r, --dry-run         Dont make any changes, just list what would happen.
+  -v, --verbose         Display changes made.
+  -g EXPRESSION, --glob EXPRESSION
+                        Find files with matching extension. Example: *.txt
+  -f FIND REPLACE, --filename FIND REPLACE
+                        Search filename for FIND and replace with REPLACE.
+  -fi, --filename-insensitive
+                        Ignore capital/lowercase when searching filename.
+  -c FIND REPLACE, --contents FIND REPLACE
+                        Search contents for FIND and replace with REPLACE.
+  -ci, --contents-insensitive
+                        Ignore capital/lowercase when searching contents.
+
+Usage Examples:
+Replace foo with bar in filenames matching *.txt:
+pyreplace -g *.txt -f foo bar
+
+Find and replace foo with bar in files matching *.txt (Contents):
+pyreplace -g *.txt -c foo bar
+
+As above with all files in current directory:
+pyreplace -c foo bar
+
+As above with all files in another directory:
+pyreplace -d /home/foo -c foo bar

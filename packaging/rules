@@ -1,0 +1,61 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+PYVERS=$(shell pyversions -vr)
+PY3VERS=$(shell py3versions -vs)
+
+-include /usr/share/python/python.mk
+ifeq (,$(py_libdir))
+    py_libdir = /usr/lib/python$(subst python,,$(1))/site-packages
+endif
+pkgdir = $(CURDIR)/debian/pyreplace
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -rf build
+	find . -name *.py[co] -delete
+	dh_clean build-*
+
+build: build-indep
+
+build-indep:
+	touch $@
+
+build-stamp:
+	dh_testdir
+	python setup.py build
+	touch $@
+
+install: $(PYVERS:%=install-python%) $(PY3VERS:%=install-python%)
+install-python%:
+	python$* setup.py install \
+		$(py_setup_install_args) \
+		--single-version-externally-managed \
+		--root $(call pkgdir,$*)
+	-dpkg --compare-versions '$*' lt '2.5' && \
+	 rm -f $(call pkgdir,$*)/$(call py_libdir,$*)/beaker/ext/google.py
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+	dh_installchangelogs
+	dh_installdocs
+	dh_installexamples
+	dh_pysupport
+	dh_python3
+	dh_compress -X.py
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb -- -Z bzip2
+
+binary-arch:
+
+binary: binary-indep binary-arch
+
+.PHONY: build clean binary-indep binary-arch binary install

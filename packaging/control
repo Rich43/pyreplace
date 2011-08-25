@@ -1,0 +1,16 @@
+Source: pyreplace
+Section: python
+Priority: extra
+Maintainer: Richie Ward <RichieS@GMail.com>
+Build-Depends: debhelper (>= 7.0.50~), python-support, python3 (>=3.0)
+Standards-Version: 3.9.1
+Homepage: http://www.pynguins.com
+
+Package: pyreplace
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends}
+Recommends: ${python3:Recommends}, python3-pkg-resources
+Suggests: ${python3:Suggests}
+Description: Command line program for find and replace in filename and contents.
+ Recursively find and replace in file names and contents.
+ Designed to be used for small tasks and it is very basic and easy to use.
