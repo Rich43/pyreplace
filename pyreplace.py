@@ -23,6 +23,7 @@ As above with all files in another directory:
 pyreplace -d /home/foo -c foo bar
 """
 
+# Define the command line arguments (see argparse docs)
 parser = argparse.ArgumentParser(description=DESCRIPTION, epilog=EXAMPLE,
                      formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('-d', '--directory', action='store', default='.',
@@ -50,74 +51,113 @@ parser.add_argument('-ci', '--contents-insensitive', action='store_true',
 args = parser.parse_args()
 
 def get_file_list():
+    """
+    Get a list of files that will be manipulated
+    """
     result = []
+    # Walk the directory tree
     for root, dirs, files in os.walk(args.directory):
+        # Do a glob on files in current directory
         for item in glob.glob(join(root, args.glob)):
+            # Add file to list
             result.append(item)
     return result
 
 def process_filenames():
+    """
+    Do find and replace on filenames from get_file_list()
+    """
+    # Arguments to pass into the regular expression library "re"
     opt_args = {}
+    # Split filename variable
     split_f = None
+    # Set insensitive flag if it is triggered on command line
     if args.filename_insensitive:
         opt_args["flags"] = re.IGNORECASE
+    # Loop through files in file list
     for f in get_file_list():
+        # If renaming directory's is disabled and it is a directory, ignore.
         if not args.filename_directory and isdir(f):
             continue
+        # If not renaming a directory
         if not args.filename_directory:
+            # Split it up, rename the filename, put back togther
             split_f = split(f)
             result = re.sub(args.filename[0], args.filename[1], 
                             split_f[1], **opt_args)
             result = join(split_f[0], result)
         else:
+            # Rename everything, directory or not.
             result = re.sub(args.filename[0], args.filename[1], 
                             f, **opt_args)
+        # If not a dry run, have a stab at renaming it!
         if not args.dry_run:
             shutil.move(f, result)
+        # If something has changed, output the changes.
         if f != result:
             yield (f, result)
 
 def process_contents():
+    """
+    Do find and replace on contents on files from get_file_list()
+    """
+    # Arguments to pass into the regular expression library "re"
     opt_args = {}
-    if args.contents_insensitive:
+    # Set insensitive flag if it is triggered on command line
+    if args.filename_insensitive:
         opt_args["flags"] = re.IGNORECASE
+    # Loop through files in file list
     for f in get_file_list():
+        # Ignore directories
         if isdir(f):
             continue
+        # Attempt to read the file
         try:
             contents = str(open(f, "r").read())
         except IOError as e:
+            # Cant open it for some reason, ignore.
             print(e)
             continue
         except UnicodeDecodeError:
+            # Not a proper string, ignore.
             continue
+        # Do a regular expression substitution.
         new_contents = re.sub(args.contents[0], args.contents[1], 
                               contents, **opt_args)
+        # If its not a dry run, write the changes.
         if not args.dry_run:
             try:
                 open(f, "w").write(new_contents)
             except IOError as e:
                 print(e)
                 continue
-        diff = ""
+        # Output a diff of the changes.
         yield (f, unified_diff(contents.splitlines(1), 
                                new_contents.splitlines(1)))
 
 def main():
+    """
+    Glue all the above code together
+    """
+    # Show help if no arguments
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
-
+    
+    # Show dry run warning, if enabled.
     if args.dry_run:
         print("*" * 5 + " Dummy run, no changes will be made. " + "*" * 5)
-
+    
+    # Process filenames, use print statements if verbose or dry run
     if args.filename:
         if args.verbose or args.dry_run:
             print("Processing Filenames...")
         for result in process_filenames():
             if args.verbose or args.dry_run:
                 print("Renaming %s to %s" % result)
-
+    
+    # Process contents, use print statements if verbose or dry run
+    # Show a diff of changes made
     if args.contents:
         if args.verbose or args.dry_run:
             print("Processing Contents...")
